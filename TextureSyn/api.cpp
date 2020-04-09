@@ -20,7 +20,7 @@ void GetGaussianKernel(double sigma, int w, double **kernel)
     }
 }
 
-//get all points within the same radius from center
+//get all points with radius r to the center
 void GetTraversalSequence(const Pixel &center, int radius, vector<Pixel> &ts)
 {
     ts.clear();
@@ -83,6 +83,7 @@ void TextureSynthesis(const Image &sample, const string &savefolder, int radius,
     {
         dis[i] = new double[sh - w + 1];
     }
+    //color 1 batch of 3x3 at the center of image to get started
     GetGaussianKernel(sigma, w, kernel);
     Pixel center = Pixel(width / 2, height / 2);
     int halfw = (w - 1) / 2;
@@ -96,6 +97,7 @@ void TextureSynthesis(const Image &sample, const string &savefolder, int radius,
             flag[center.x + i][center.y + j] = true;
         }
     }
+    //process from center to edges, each time increment radius by 1
     vector<Pixel> ts;
     int currR = 2;
     while (currR <= radius)
@@ -106,6 +108,10 @@ void TextureSynthesis(const Image &sample, const string &savefolder, int radius,
         for (auto pos : ts)
         {
             if (flag[pos.x][pos.y])
+            /*&& 0 <= p1.x && p1.x < sample.width &&
+                0 <= p1.y && p1.y < sample.height &&
+                0 <= p2.x && p2.x < res.width &&
+                0 <= p2.y && p2.y < res.height*/
             { //if points have been processed, skip
                 cout << "Done" << endl;
                 continue;
@@ -113,11 +119,12 @@ void TextureSynthesis(const Image &sample, const string &savefolder, int radius,
             double minDis = 1e6;
             //top left corner of w(p) = square image patch with width w centered at p
             Pixel corner = pos - Pixel(halfw, halfw);
-            //for all points in sample square, compute & store distance and find min
+            //for possible batch in sample
             for (int x = 0; x < sw - w + 1; x++)
             {
                 for (int y = 0; y < sh - w + 1; y++)
                 {
+                    //compute dist between batch_sample and batch_current
                     double dist = GetDistanceOfBatch(Vector2(x, y), corner, sample, res, kernel, flag, w);
                     minDis = min(dist, minDis);
                     dis[x][y] = dist;
@@ -129,7 +136,7 @@ void TextureSynthesis(const Image &sample, const string &savefolder, int radius,
             for (int x = 0; x < sw - w + 1; x++)
             {
                 for (int y = 0; y < sh - w + 1; y++)
-                { //all patches w with d(w(p), w) <= (1+epsilon) d_min are included
+                { //include only patches w with d(w(p), w) <= (1+epsilon) d_min
                     if (dis[x][y] <= upperBound)
                         canPixel.push_back(Vector2(x, y));
                 }
@@ -137,8 +144,13 @@ void TextureSynthesis(const Image &sample, const string &savefolder, int radius,
 
             int pixelCnt = canPixel.size();
             int index = randint(pixelCnt);
+            /* random select 1 pixel from batch_sample and use its color
+                - canPixel[index] = top left corner of sample batch 
+                - need +Vector2(halfw, halfw) to get the center point of sample batch
+            */
             Pixel choice = canPixel[index] + Vector2(halfw, halfw);
             res.SetColor(pos, sample.GetColor(choice));
+            //market current pixel at (x,y) as processed to be used later
             flag[pos.x][pos.y] = true;
         }
         res.save(savefolder + "/" + int2str(w) + "_" + int2str(currR) + ".ppm");
@@ -167,23 +179,23 @@ string int2str(int x)
     stream << x;
     return stream.str();
 }
+
+//compute sum of difference of all pixels between current batch (ro) and teh sample batch(so)
+//window square size = w * w
 double GetDistanceOfBatch(const Pixel &so, const Pixel &ro, const Image &sample, const Image &res, double **kernel, bool **flag, int w)
 {
     int halfw = (w - 1) / 2;
     double sum = 0;
     int validcnt = 0;
+    //for all pixel in window
     for (int i = 0; i < w; i++)
     {
         for (int j = 0; j < w; j++)
         {
-            Pixel p1 = so + Vector2(i, j);
-            Pixel p2 = ro + Vector2(i, j);
-            //empty pixel hasn't been processed
-            if (flag[p2.x][p2.y] /*&& 0 <= p1.x && p1.x < sample.width &&
-                0 <= p1.y && p1.y < sample.height &&
-                0 <= p2.x && p2.x < res.width &&
-                0 <= p2.y && p2.y < res.height*/
-            )
+            Pixel p1 = so + Vector2(i, j); //pixel in sample
+            Pixel p2 = ro + Vector2(i, j); //pixel in current patch w(p)
+            //check if the pixel (p2) has been previously synthesized in w(p)
+            if (flag[p2.x][p2.y])
             {
                 validcnt++;
                 /*  SQRDISTANCE(A,B) = sum of square distance of RGB values for a given pixel 
