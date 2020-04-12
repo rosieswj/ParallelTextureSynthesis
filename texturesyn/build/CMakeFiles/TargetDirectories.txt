@@ -1,3 +1,0 @@
-F:/TextureSynthesis/build/CMakeFiles/TextureSynthesis.dir
-F:/TextureSynthesis/build/CMakeFiles/edit_cache.dir
-F:/TextureSynthesis/build/CMakeFiles/rebuild_cache.dir
