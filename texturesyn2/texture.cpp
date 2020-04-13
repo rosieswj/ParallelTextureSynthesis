@@ -35,6 +35,7 @@ void RGBtoImage(double **pixels, int w, int h, const string &filename)
     res.save(filename + int2str(w) + "x" + int2str(h) + ".ppm");
 }
 
+//TODO
 void synthesize(double **sample, double **res, int radius, int w, int sw, int sh)
 {
 }
