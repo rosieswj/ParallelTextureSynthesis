@@ -1,4 +1,4 @@
-#include "text.h"
+#include "texture.h"
 
 double **getRGB(const Image &img)
 {
@@ -14,6 +14,8 @@ double **getRGB(const Image &img)
 
 void deleteRGB(double **pixels, int w, int h)
 {
+    if (pixels == NULL)
+        return;
     for (int i = 0; i < w * h; ++i)
     {
         delete[] pixels[i];
@@ -30,5 +32,9 @@ void RGBtoImage(double **pixels, int w, int h, const string &filename)
         int y = i / w;
         res.SetColor(Vector2(x, y), Vector3(pixels[i][0], pixels[i][1], pixels[i][2]));
     }
-    res.save(filename + int2str(w) + "_" + int2str(h) + ".ppm");
+    res.save(filename + int2str(w) + "x" + int2str(h) + ".ppm");
+}
+
+void synthesize(double **sample, double **res, int radius, int w, int sw, int sh)
+{
 }

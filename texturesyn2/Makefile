@@ -5,8 +5,8 @@ RM=rm -f
 CFLAGS=-g -O3 -Wall  -std=c++11 
 LDFLAGS= -lm
 
-CFILES = vector2.cpp vector3.cpp api.cpp image.cpp main.cpp text.cpp
-HFILES = vector2.h vector3.h api.h all.h image.h text.h
+CFILES = vector2.cpp vector3.cpp api.cpp image.cpp main.cpp texture.cpp
+HFILES = vector2.h vector3.h api.h all.h image.h texture.h
 
 image: $(CFILES) $(HFILES)
 	$(CXX) $(CFLAGS) $(LDFLAGS) -o texturesyn $(CFILES)
@@ -14,4 +14,5 @@ image: $(CFILES) $(HFILES)
 clean:
 	$(RM) -f texturesyn
 	$(RM) -rf *.dSYM
+	$(RM) -f out/*
 

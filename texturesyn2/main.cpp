@@ -1,17 +1,24 @@
 #include "api.h"
-#include "text.h"
+#include "texture.h"
 
 int main()
 {
-    Image sample("./src/sample1.ttr");
-    double **pixels = getRGB(sample);
+    //user defined parameters
+    int WINDOW = 0;
+    int RADIUS = 0;
+    const string INPUT = "./src/sample1.ttr";
+    const string OUTPUT = "./out/sample1-out-";
 
-    int width = sample.width;
-    int height = sample.height;
-    // for (int i = 0; i < 20; i++) printf("%.f, %.f, %.f\n", pixels[i][0], pixels[i][1], pixels[i][2]);
+    Image sampleImg(INPUT);
+    int sw = sampleImg.width;
+    int sh = sampleImg.height;
+    double **sample = getRGB(sampleImg);
+    double **res = NULL;
 
-    RGBtoImage(pixels, width, height, "./out/test-sample1-");
-    deleteRGB(pixels, width, height);
+    synthesize(sample, res, RADIUS, WINDOW, sw, sh);
+
+    RGBtoImage(sample, sw, sh, OUTPUT);
+    deleteRGB(sample, sw, sh);
 
     return 0;
 }
