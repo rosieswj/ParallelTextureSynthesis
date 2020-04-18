@@ -75,3 +75,15 @@ void printAll(double **val, int w, int h)
         }
     }
 }
+
+int randint(int N)
+{
+    return floor(rand() * 1.0 / RAND_MAX * N);
+}
+
+string int2str(int x)
+{
+    stringstream stream;
+    stream << x;
+    return stream.str();
+}
