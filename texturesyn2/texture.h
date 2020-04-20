@@ -21,3 +21,5 @@ void printRGB(double **val, int idx);      //print single RGB value
 void printAll(double **val, int w, int h); //print all rgb values in image
 
 void synthesize(double **sample, double **res, int radius, int w, int sw, int sh);
+
+void outmsg(const char *fmt, ...);
