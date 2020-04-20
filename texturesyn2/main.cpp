@@ -1,4 +1,6 @@
 #include "texture.h"
+#include "lib/cycletimer.h"
+#include "lib/instrument.h"
 
 int main()
 {
@@ -8,6 +10,11 @@ int main()
     const string INPUT = "./src/sample1.ttr";
     const string OUTPUT = "./out/sample1-out-";
 
+    bool instrument = true;
+    track_activity(instrument);
+
+    //read sample image
+    START_ACTIVITY(ACVIVITY_IMAGE);
     Image sampleImg(INPUT);
     int sw = sampleImg.width;
     int sh = sampleImg.height;
@@ -18,18 +25,21 @@ int main()
     {
         res[i] = new double[3]; //RGB value
     }
-    printf("############## read sample done ##################\n");
+    printf("\n############## read sample done ##################\n");
     printf("[sample] %d x %d, size = %d\n", sw, sh, sw * sh);
     printf("[result] %d x %d, size = %d\n", rsize, rsize, rsize * rsize);
+    FINISH_ACTIVITY(ACVIVITY_IMAGE);
 
     synthesize(sample, res, RADIUS, WINDOW, sw, sh);
-    printf("############## synthesize done #####################\n");
+    printf("\n############## synthesize done #####################\n");
 
+    //write result image
+    START_ACTIVITY(ACVIVITY_IMAGE);
     RGBtoImage(res, rsize, rsize, OUTPUT);
-    printf("############## output to image done #####################\n");
+    FINISH_ACTIVITY(ACVIVITY_IMAGE);
 
     deleteRGB(res, rsize, rsize);
     deleteRGB(sample, sw, sh);
-    printf("############## free malloc done #####################\n");
+    SHOW_ACTIVITY(stderr, instrument);
     return 0;
 }

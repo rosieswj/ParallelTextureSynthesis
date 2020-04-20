@@ -1,4 +1,6 @@
 #include "texture.h"
+#include "lib/cycletimer.h"
+#include "lib/instrument.h"
 
 double getDistanceOfBatch(double **res, double **sample,
                           double **kernel, bool **flag, int sx, int sy, int tx, int ty,
@@ -61,6 +63,7 @@ void getTraversalSequence(int **ts, int radius, int cx, int cy)
 //TODO
 void synthesize(double **sample, double **res, int radius, int w, int sw, int sh)
 {
+    START_ACTIVITY(ACTIVITY_STARTUP);
     int total = 0;
     int rw = 2 * radius + w + 10;
     int rh = rw;
@@ -88,7 +91,7 @@ void synthesize(double **sample, double **res, int radius, int w, int sw, int sh
     }
 
     getGaussianKernel(sigma, w, kernel);
-    printf("############## alloc data done #####################\n");
+    // printf("\n############## alloc data done #####################\n");
 
     //============================init window
     int cx = rw / 2;
@@ -113,6 +116,8 @@ void synthesize(double **sample, double **res, int radius, int w, int sw, int sh
             flag[cx + i][cy + j] = true;
         }
     }
+    FINISH_ACTIVITY(ACTIVITY_STARTUP);
+
     //=================================
     int currR = 2;
     while (currR <= radius)
@@ -134,6 +139,7 @@ void synthesize(double **sample, double **res, int radius, int w, int sw, int sh
             int cornerx = tx - halfw;
             int cornery = ty - halfw;
 
+            START_ACTIVITY(ACTIVITY_DIST);
             for (int x = 0; x < sw - w + 1; x++)
             {
                 for (int y = 0; y < sh - w + 1; y++)
@@ -143,7 +149,9 @@ void synthesize(double **sample, double **res, int radius, int w, int sw, int sh
                     dis[x][y] = dist;
                 }
             }
+            FINISH_ACTIVITY(ACTIVITY_DIST);
 
+            START_ACTIVITY(ACTIVITY_NEXT);
             vector<int> canPixel;
             int windowH = sh - w + 1;
             double upperBound = minDis * (1 + epsilon);
@@ -173,6 +181,7 @@ void synthesize(double **sample, double **res, int radius, int w, int sw, int sh
             }
             total++;
             flag[tx][ty] = true;
+            FINISH_ACTIVITY(ACTIVITY_NEXT);
         }
         currR++;
     }
