@@ -77,6 +77,7 @@ int main(int argc, char *argv[])
     int sw = sampleImg.width;
     int sh = sampleImg.height;
     double **sample = getRGB(sampleImg);
+
     int rsize = 2 * RADIUS + WINDOW + 10;
     double **res = new double *[rsize * rsize];
     for (int i = 0; i < rsize * rsize; i++)
@@ -91,9 +92,12 @@ int main(int argc, char *argv[])
     synthesize(sample, res, RADIUS, WINDOW, sw, sh);
     // printf("\n############## synthesize done #####################\n");
 
+    // printAll(res, rsize, rsize);
     //write result image
     START_ACTIVITY(ACVIVITY_IMAGE);
     RGBtoImage(res, rsize, rsize, OUTPUT);
+    // RGBtoImage(sample, sw, sh, OUTPUT);
+
     FINISH_ACTIVITY(ACVIVITY_IMAGE);
 
     deleteRGB(res, rsize, rsize);

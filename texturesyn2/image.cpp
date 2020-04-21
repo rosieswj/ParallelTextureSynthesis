@@ -64,8 +64,8 @@ void Image ::getPixels(double **pixels) const
 {
     for (int i = 0; i < width * height; ++i)
     {
-        int x = i % width;
-        int y = i / width;
+        int x = i / height;
+        int y = i % height;
         pixels[i][0] = image[x][y].r;
         pixels[i][1] = image[x][y].g;
         pixels[i][2] = image[x][y].b;

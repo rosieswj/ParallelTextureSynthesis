@@ -63,6 +63,7 @@ void getTraversalSequence(int **ts, int radius, int cx, int cy)
 //TODO
 void synthesize(double **sample, double **res, int radius, int w, int sw, int sh)
 {
+    // printAll(sample, sw, sh);
     START_ACTIVITY(ACTIVITY_STARTUP);
     int total = 0;
     int rw = 2 * radius + w + 10;
@@ -153,6 +154,7 @@ void synthesize(double **sample, double **res, int radius, int w, int sw, int sh
 
             START_ACTIVITY(ACTIVITY_NEXT);
             vector<int> canPixel;
+            canPixel.clear();
             int windowH = sh - w + 1;
             double upperBound = minDis * (1 + epsilon);
             for (int x = 0; x < sw - w + 1; x++)
@@ -179,6 +181,9 @@ void synthesize(double **sample, double **res, int radius, int w, int sw, int sh
                 // printRGB(sample, s_id);
                 res[r_id][c] = sample[s_id][c];
             }
+            // printf("res, sample\n");
+            // printRGB(res, r_id);
+            // printRGB(sample, s_id);
             total++;
             flag[tx][ty] = true;
             FINISH_ACTIVITY(ACTIVITY_NEXT);

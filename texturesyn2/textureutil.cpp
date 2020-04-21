@@ -53,8 +53,8 @@ void RGBtoImage(double **pixels, int w, int h, const string &filename)
     Image res(w, h);
     for (int i = 0; i < w * h; i++)
     {
-        int x = i % w;
-        int y = i / w;
+        int x = i / h;
+        int y = i % h;
         res.SetColor(Vector2(x, y), Vector3(pixels[i][0], pixels[i][1], pixels[i][2]));
     }
     res.save(filename + "_" + int2str(w) + "x" + int2str(h) + ".ppm");
