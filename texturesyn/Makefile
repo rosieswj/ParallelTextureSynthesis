@@ -9,9 +9,9 @@ CFILES = lib/cycletimer.cpp lib/instrument.cpp vector2.cpp vector3.cpp api.cpp i
 HFILES = lib/cycletimer.h lib/instrument.h vector2.h vector3.h api.h all.h image.h 
 
 image: $(CFILES) $(HFILES)
-	$(CXX) $(CFLAGS) $(LDFLAGS) -o texturesyn $(CFILES)
+	$(CXX) $(CFLAGS) $(LDFLAGS) -o texturesynOrigin $(CFILES)
 
 clean:
-	$(RM) -f texturesyn
+	$(RM) -f texturesynOrigin
 	$(RM) -rf *.dSYM
 

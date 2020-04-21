@@ -144,7 +144,7 @@ void TextureSynthesis(const Image &sample, const string &savefolder, int radius,
         currR++;
     }
     START_ACTIVITY(ACVIVITY_IMAGE);
-    res.save(savefolder + "/" + int2str(w) + "_" + int2str(height) + ".ppm");
+    res.save(savefolder + "_" + int2str(w) + "x" + int2str(height) + ".ppm");
     FINISH_ACTIVITY(ACVIVITY_IMAGE);
 
     for (int i = 0; i < w; i++)
