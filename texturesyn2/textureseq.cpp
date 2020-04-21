@@ -72,7 +72,6 @@ double compute_dist(state_t *s,info_t *info, double ** dis,int tx, int ty) {
     int yEnd = info->yEnd;
     int cornerx = tx - (info->w-1)/2;
     int cornery = ty - (info->w-1)/2;
-
     for (int x = 0; x < xEnd; x++)
     {
         for (int y = 0; y < yEnd; y++)
@@ -144,7 +143,7 @@ void synthesize(state_t *s, info_t *info)
             ts[i] = new int[2];
         }
         getTraversalSequence(ts, currR, cx, cy);
-        printf("r=%d: %d\n", currR, traverseSize);
+        // printf("r=%d: %d\n", currR, traverseSize);
 
         for (int i = 0; i < traverseSize; i++)
         {
@@ -152,35 +151,9 @@ void synthesize(state_t *s, info_t *info)
             int ty = ts[i][1];
             if (flag[tx][ty]) continue;
 
+        // #pragma omp for schedule(static)
             START_ACTIVITY(ACTIVITY_DIST);
-            // double minDis = compute_dist(s, info, dis, tx, ty);
-
-            double minDis = 1e6;
-            #pragma omp parallel default(none) shared(dis, s, info, tx, ty, minDis)
-            {
-                int cornerx = tx - (info->w-1)/2;
-                int cornery = ty - (info->w-1)/2;
-                int xEnd = info->xEnd;
-                int yEnd = info->yEnd;
-                int tcnt = omp_get_num_threads();
-                int chunk_size =  xEnd * yEnd / (tcnt);
-                chunk_size = chunk_size > 1 ? chunk_size : 1;
-
-                #pragma omp for schedule(dynamic, chunk_size) nowait
-                // #pragma omp for schedule(static)
-                for (int i=0; i< xEnd * yEnd; i++) {
-                    int x = i / yEnd;
-                    int y = i % yEnd;
-                    double dist = getDistanceOfBatch(s, info, x, y, cornerx, cornery);
-                    dis[x][y] = dist;
-
-                    #pragma omp critical
-                    minDis = min(dist, minDis);
-                }
-            }
-
-            // return minDis;
-
+            double minDis = compute_dist(s, info, dis, tx, ty);
             FINISH_ACTIVITY(ACTIVITY_DIST);
 
             START_ACTIVITY(ACTIVITY_NEXT);

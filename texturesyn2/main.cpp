@@ -111,12 +111,14 @@ int main(int argc, char *argv[])
     //write result image
     START_ACTIVITY(ACVIVITY_IMAGE);
     RGBtoImage(s->res, rsize, rsize, OUTPUT);
-
     FINISH_ACTIVITY(ACVIVITY_IMAGE);
+
     freeState(s, info);
     freeInfo(info);
 
-    SHOW_ACTIVITY(stderr, instrument);
     printf("DONE\n");
+
+    SHOW_ACTIVITY(stderr, instrument);
+
     return 0;
 }
