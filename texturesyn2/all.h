@@ -4,7 +4,8 @@
 #include <fstream>
 #include <cstdio>
 #include <cstdlib>
-#include <string>
+#include <cstring>
+#include <stdarg.h>
 #include <cmath>
 #include <algorithm>
 #include <vector>
