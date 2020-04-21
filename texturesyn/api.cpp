@@ -54,7 +54,7 @@ void GetTraversalSequence(const Pixel &center, int radius, vector<Pixel> &ts)
 
 void TextureSynthesis(const Image &sample, const string &savefolder, int radius, int w)
 {
-    srand(INITSEED);
+
     int sw = sample.width;
     int sh = sample.height;
     int width = 2 * radius + w + 10;
@@ -99,17 +99,18 @@ void TextureSynthesis(const Image &sample, const string &savefolder, int radius,
     int currR = 2;
     while (currR <= radius)
     {
-        cout << "Current Radius : " << currR << endl;
+        // cout << "Current Radius : " << currR << endl;
         GetTraversalSequence(center, currR, ts);
         for (auto pos : ts)
         {
             if (flag[pos.x][pos.y])
             {
-                cout << "Done" << endl;
+                // cout << "Done" << endl;
                 continue;
             }
             double minDis = 1e6;
             Pixel corner = pos - Pixel(halfw, halfw);
+            START_ACTIVITY(ACTIVITY_DIST);
             for (int x = 0; x < sw - w + 1; x++)
             {
                 for (int y = 0; y < sh - w + 1; y++)
@@ -119,6 +120,8 @@ void TextureSynthesis(const Image &sample, const string &savefolder, int radius,
                     dis[x][y] = dist;
                 }
             }
+            FINISH_ACTIVITY(ACTIVITY_DIST);
+            START_ACTIVITY(ACTIVITY_NEXT);
             vector<Pixel> canPixel;
             canPixel.clear();
             double upperBound = minDis * (1 + epsilon);
@@ -134,12 +137,15 @@ void TextureSynthesis(const Image &sample, const string &savefolder, int radius,
             Pixel choice = canPixel[index] + Vector2(halfw, halfw);
             res.SetColor(pos, sample.GetColor(choice));
             flag[pos.x][pos.y] = true;
+            FINISH_ACTIVITY(ACTIVITY_NEXT);
 
             //cout << "Finished : " << pos << endl;
         }
         currR++;
     }
+    START_ACTIVITY(ACVIVITY_IMAGE);
     res.save(savefolder + "/" + int2str(w) + "_" + int2str(height) + ".ppm");
+    FINISH_ACTIVITY(ACVIVITY_IMAGE);
 
     for (int i = 0; i < w; i++)
     {
@@ -189,4 +195,15 @@ double GetDistanceOfBatch(const Pixel &so, const Pixel &ro, const Image &sample,
     if (!validcnt)
         return 1e6;
     return sum / validcnt;
+}
+
+void outmsg(const char *fmt, ...)
+{
+    va_list ap;
+    bool got_newline = fmt[strlen(fmt) - 1] == '\n';
+    va_start(ap, fmt);
+    vfprintf(stderr, fmt, ap);
+    va_end(ap);
+    if (!got_newline)
+        fprintf(stderr, "\n");
 }
