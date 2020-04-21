@@ -1,6 +1,6 @@
 
 #include "image.h"
-
+#include <omp.h>
 void getGaussianKernel(double sigma, int w, double **kernel);
 void getTraversalSequence(int *ts, int radius, int cx, int cy);
 

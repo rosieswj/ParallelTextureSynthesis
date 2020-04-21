@@ -141,6 +141,7 @@ void synthesize(double **sample, double **res, int radius, int w, int sw, int sh
             int cornery = ty - halfw;
 
             START_ACTIVITY(ACTIVITY_DIST);
+	    #pragma omp for schedule(static)
             for (int x = 0; x < sw - w + 1; x++)
             {
                 for (int y = 0; y < sh - w + 1; y++)
