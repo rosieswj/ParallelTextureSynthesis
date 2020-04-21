@@ -54,6 +54,7 @@ void GetTraversalSequence(const Pixel &center, int radius, vector<Pixel> &ts)
 
 void TextureSynthesis(const Image &sample, const string &savefolder, int radius, int w)
 {
+    srand(INITSEED);
     int sw = sample.width;
     int sh = sample.height;
     int width = 2 * radius + w + 10;

@@ -73,6 +73,7 @@ int main(int argc, char *argv[])
     //read sample image
     START_ACTIVITY(ACVIVITY_IMAGE);
     Image sampleImg(INPUT);
+    srand(INITSEED);
 
     int sw = sampleImg.width;
     int sh = sampleImg.height;

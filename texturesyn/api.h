@@ -3,6 +3,8 @@
 #include "image.h"
 #include "vector3.h"
 #include "vector2.h"
+#define INITSEED 418
+
 void GetGaussianKernel(double sigma, int w, double** kernel);
 
 string int2str(int x);

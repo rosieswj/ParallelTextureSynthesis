@@ -6,8 +6,8 @@ int main()
 
     // printf("%d, %d\n", sample.width, sample.height);
 
-    Image sample("./src/1.ttr");
-    TextureSynthesis(sample, ".", 200, 5);
+    Image sample("./src/sample1.ttr");
+    TextureSynthesis(sample, ".", 100, 10);
 
     return 0;
 }

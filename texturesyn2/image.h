@@ -3,6 +3,7 @@
 #include "all.h"
 #include "vector3.h"
 #include "vector2.h"
+#define INITSEED 418
 class Image
 {
 private:
