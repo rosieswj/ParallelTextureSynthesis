@@ -64,7 +64,7 @@ void getTraversalSequence(int **ts, int radius, int cx, int cy)
     }
 }
 
-double find_dist(state_t *s,info_t *info, double ** dis,int tx, int ty) {
+double compute_dist(state_t *s,info_t *info, double ** dis,int tx, int ty) {
 
     double minDis = 1e6;
     int xEnd = info->xEnd;
@@ -142,19 +142,17 @@ void synthesize(state_t *s, info_t *info)
             ts[i] = new int[2];
         }
         getTraversalSequence(ts, currR, cx, cy);
-
-
         // printf("r=%d: %d\n", currR, traverseSize);
+
         for (int i = 0; i < traverseSize; i++)
         {
             int tx = ts[i][0];
             int ty = ts[i][1];
             if (flag[tx][ty]) continue;
 
-
         // #pragma omp for schedule(static)
             START_ACTIVITY(ACTIVITY_DIST);
-            double minDis = find_dist(s, info, dis, tx, ty);
+            double minDis = compute_dist(s, info, dis, tx, ty);
             FINISH_ACTIVITY(ACTIVITY_DIST);
 
             START_ACTIVITY(ACTIVITY_NEXT);
@@ -182,13 +180,8 @@ void synthesize(state_t *s, info_t *info)
             int s_id = ID(choiceX, choiceY, sh);
             for (int c = 0; c < 3; c++)
             {
-                // printf("setting rid=%d => ", r_id);
-                // printRGB(sample, s_id);
                 res[r_id][c] = sample[s_id][c];
             }
-            // printf("res, sample\n");
-            // printRGB(res, r_id);
-            // printRGB(sample, s_id);
             total++;
             flag[tx][ty] = true;
             FINISH_ACTIVITY(ACTIVITY_NEXT);
