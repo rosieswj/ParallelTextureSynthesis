@@ -156,8 +156,15 @@ void synthesize(state_t *s, info_t *info)
             // double minDis = compute_dist(s, info, dis, tx, ty);
 
             double minDis = 1e6;
+
             #pragma omp parallel default(none) shared(dis, s, info, tx, ty, minDis)
             {
+                int tid = omp_get_thread_num();
+                int tcount = omp_get_num_threads();
+                double *scratch_vector = new double[tcount];
+                for (int i = 0; i < tcount; i++){
+                    scratch_vector[i] = 1e6;
+                }
                 int cornerx = tx - (info->w-1)/2;
                 int cornery = ty - (info->w-1)/2;
                 int xEnd = info->xEnd;
@@ -173,9 +180,11 @@ void synthesize(state_t *s, info_t *info)
                     int y = i % yEnd;
                     double dist = getDistanceOfBatch(s, info, x, y, cornerx, cornery);
                     dis[x][y] = dist;
-
-                    #pragma omp critical
-                    minDis = min(dist, minDis);
+                    scratch_vector[tid] = min(dist,scratch_vector[tid]);
+                    //minDis = min(dist, minDis);
+                }
+                for (int i = 0; i < tcount; i++){
+                    minDis = min(scratch_vector[i],minDis);
                 }
             }
 
