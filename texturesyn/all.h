@@ -9,6 +9,8 @@
 #include <algorithm>
 #include <vector>
 #include <sstream>
+#include <stdarg.h>
+#include <cstring>
 using namespace std;
 #define PI 3.1415926535
 
