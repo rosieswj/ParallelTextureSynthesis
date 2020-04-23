@@ -3,6 +3,7 @@
 #include "all.h"
 #include "vector3.h"
 #include "vector2.h"
+#define INITSEED 418
 class Image
 {
 private:
@@ -20,6 +21,8 @@ public:
     Color GetColor(const Pixel &p) const;
     void SetColor(const Pixel &p, Color color);
     void SetColor(int x, int y, Color color);
+    // unsigned char **getPixels() const;
+    void getPixels(double **pixels) const;
     ~Image();
 };
 #endif

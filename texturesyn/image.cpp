@@ -21,6 +21,7 @@ Image::Image(const string &filename)
         for (int i = 0; i < width; i++)
         {
             in >> image[i][j];
+            // in >> image[j][i];
         }
     }
 }
@@ -35,6 +36,7 @@ void Image::save(const string &filename)
         for (int i = 0; i < width; i++)
         {
             out << int(image[i][j].r) << ' ' << int(image[i][j].g) << ' ' << int(image[i][j].b) << endl;
+            // out << int(image[j][i].r) << ' ' << int(image[j][i].g) << ' ' << int(image[j][i].b) << endl;
         }
     }
 }
@@ -58,6 +60,18 @@ Color Image::GetColor(int x, int y) const
     }
 }
 
+void Image ::getPixels(double **pixels) const
+{
+    for (int i = 0; i < width * height; ++i)
+    {
+        int x = i / height;
+        int y = i % height;
+        pixels[i][0] = image[x][y].r;
+        pixels[i][1] = image[x][y].g;
+        pixels[i][2] = image[x][y].b;
+    }
+}
+
 Image::~Image()
 {
     for (int i = 0; i < width; i++)
@@ -77,6 +91,7 @@ Color Image::GetColor(const Pixel &p) const
         return Color();
     }
 }
+
 void Image::SetColor(const Pixel &p, Color color)
 {
     if (0 <= p.x && p.x < width && 0 <= p.y && p.y < height)

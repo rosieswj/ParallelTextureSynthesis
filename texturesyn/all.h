@@ -4,13 +4,12 @@
 #include <fstream>
 #include <cstdio>
 #include <cstdlib>
-#include <string>
+#include <cstring>
+#include <stdarg.h>
 #include <cmath>
 #include <algorithm>
 #include <vector>
 #include <sstream>
-#include <stdarg.h>
-#include <cstring>
 using namespace std;
 #define PI 3.1415926535
 
