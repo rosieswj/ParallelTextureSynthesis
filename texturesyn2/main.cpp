@@ -79,14 +79,14 @@ int main(int argc, char *argv[])
     }
 
     // if (thread_count > 1) {
-        outmsg("Running with %d threads. Max possible is %d.\n",
+    outmsg("Running with %d threads. Max possible is %d.\n",
            thread_count, omp_get_max_threads());
     // }
     omp_set_num_threads(thread_count);
 
     track_activity(instrument);
     //read sample image
-    START_ACTIVITY(ACVIVITY_IMAGE);
+    START_ACTIVITY(ACTIVITY_IMAGE);
     Image sampleImg(INPUT);
     srand(INITSEED);
 
@@ -102,16 +102,15 @@ int main(int argc, char *argv[])
     // printf("\n############## read sample done ##################\n");
     printf("sample [%d x %d] with r=%d, w=%d\n", info->sw, info->sh, info->r, info->w);
     printf("result [%d x %d]\n", info->rw, info->rh);
-    FINISH_ACTIVITY(ACVIVITY_IMAGE);
+    FINISH_ACTIVITY(ACTIVITY_IMAGE);
 
     synthesize(s, info);
     // printf("\n############## synthesize done #####################\n");
 
-    // printAll(res, rsize, rsize);
     //write result image
-    START_ACTIVITY(ACVIVITY_IMAGE);
+    START_ACTIVITY(ACTIVITY_IMAGE);
     RGBtoImage(s->res, rsize, rsize, OUTPUT);
-    FINISH_ACTIVITY(ACVIVITY_IMAGE);
+    FINISH_ACTIVITY(ACTIVITY_IMAGE);
 
     freeState(s, info);
     freeInfo(info);
