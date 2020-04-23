@@ -110,7 +110,6 @@ void TextureSynthesis(const Image &sample, const string &savefolder, int radius,
         {
             if (flag[pos.x][pos.y])
             {
-                // cout << "Done" << endl;
                 continue;
             }
             double minDis = 1e6;
