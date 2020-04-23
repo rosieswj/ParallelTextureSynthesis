@@ -1,6 +1,6 @@
 #include "image.h"
 
-Image::Image() : width(0), height(0), image(NULL) {}
+// Image::Image() : width(0), height(0), image(NULL) {}
 Image::Image(int _w, int _h) : width(_w), height(_h)
 {
     image = new Color *[width];

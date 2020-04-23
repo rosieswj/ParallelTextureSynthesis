@@ -61,7 +61,9 @@ void TextureSynthesis(const Image &sample, const string &savefolder, int radius,
     int height = width;
     double epsilon = 0.1;
     double sigma = 1;
+    START_ACTIVITY(ACTIVITY_IMAGE);
     Image res(width, height);
+    FINISH_ACTIVITY(ACTIVITY_IMAGE);
 
     double **kernel = new double *[w];
     bool **flag = new bool *[width];
@@ -87,6 +89,8 @@ void TextureSynthesis(const Image &sample, const string &savefolder, int radius,
     int halfw = (w - 1) / 2;
     int init_x = randint(sw - 2) + 1;
     int init_y = randint(sh - 2) + 1;
+
+    START_ACTIVITY(ACTIVITY_IMAGE);
     for (int i = -1; i < 2; i++)
     {
         for (int j = -1; j < 2; j++)
@@ -95,6 +99,7 @@ void TextureSynthesis(const Image &sample, const string &savefolder, int radius,
             flag[center.x + i][center.y + j] = true;
         }
     }
+    FINISH_ACTIVITY(ACTIVITY_IMAGE);
     vector<Pixel> ts;
     int currR = 2;
     while (currR <= radius)
@@ -110,17 +115,18 @@ void TextureSynthesis(const Image &sample, const string &savefolder, int radius,
             }
             double minDis = 1e6;
             Pixel corner = pos - Pixel(halfw, halfw);
-            START_ACTIVITY(ACTIVITY_DIST);
             for (int x = 0; x < sw - w + 1; x++)
             {
                 for (int y = 0; y < sh - w + 1; y++)
                 {
                     double dist = GetDistanceOfBatch(Vector2(x, y), corner, sample, res, kernel, flag, w);
+                    START_ACTIVITY(ACTIVITY_DIST);
                     minDis = min(dist, minDis);
                     dis[x][y] = dist;
+                    FINISH_ACTIVITY(ACTIVITY_DIST);
                 }
             }
-            FINISH_ACTIVITY(ACTIVITY_DIST);
+
             START_ACTIVITY(ACTIVITY_NEXT);
             vector<Pixel> canPixel;
             canPixel.clear();
@@ -134,18 +140,21 @@ void TextureSynthesis(const Image &sample, const string &savefolder, int radius,
 
             int pixelCnt = canPixel.size();
             int index = randint(pixelCnt);
+            FINISH_ACTIVITY(ACTIVITY_NEXT);
+
+            START_ACTIVITY(ACTIVITY_IMAGE);
             Pixel choice = canPixel[index] + Vector2(halfw, halfw);
             res.SetColor(pos, sample.GetColor(choice));
             flag[pos.x][pos.y] = true;
-            FINISH_ACTIVITY(ACTIVITY_NEXT);
+            FINISH_ACTIVITY(ACTIVITY_IMAGE);
 
             //cout << "Finished : " << pos << endl;
         }
         currR++;
     }
-    START_ACTIVITY(ACVIVITY_IMAGE);
+    START_ACTIVITY(ACTIVITY_IMAGE);
     res.save(savefolder + "_" + int2str(w) + "x" + int2str(height) + ".ppm");
-    FINISH_ACTIVITY(ACVIVITY_IMAGE);
+    FINISH_ACTIVITY(ACTIVITY_IMAGE);
 
     for (int i = 0; i < w; i++)
     {
@@ -172,7 +181,6 @@ string int2str(int x)
 }
 double GetDistanceOfBatch(const Pixel &so, const Pixel &ro, const Image &sample, const Image &res, double **kernel, bool **flag, int w)
 {
-    int halfw = (w - 1) / 2;
     double sum = 0;
     int validcnt = 0;
     for (int i = 0; i < w; i++)
@@ -188,7 +196,13 @@ double GetDistanceOfBatch(const Pixel &so, const Pixel &ro, const Image &sample,
             )
             {
                 validcnt++;
-                sum += SQRDISTANCE(sample.GetColor(p1), res.GetColor(p2)) * kernel[i][j];
+                START_ACTIVITY(ACTIVITY_IMAGE);
+                Color c1 = sample.GetColor(p1);
+                Color c2 = res.GetColor(p2);
+                FINISH_ACTIVITY(ACTIVITY_IMAGE);
+                START_ACTIVITY(ACTIVITY_DIST);
+                sum += SQRDISTANCE(c1, c2) * kernel[i][j];
+                FINISH_ACTIVITY(ACTIVITY_DIST);
             }
         }
     }

@@ -74,10 +74,10 @@ int main(int argc, char *argv[])
 
     printf("w=%d, r=%d\n", WINDOW, RADIUS);
     track_activity(instrument);
-    START_ACTIVITY(ACVIVITY_IMAGE);
 
+    START_ACTIVITY(ACTIVITY_IMAGE);
     Image sample(INPUT);
-    FINISH_ACTIVITY(ACVIVITY_IMAGE);
+    FINISH_ACTIVITY(ACTIVITY_IMAGE);
 
     TextureSynthesis(sample, OUTPUT, RADIUS, WINDOW);
 
