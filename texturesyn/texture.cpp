@@ -135,6 +135,7 @@ void synthesize(state_t *s, info_t *info)
             {
                 int tid = omp_get_thread_num();
                 int tcount = omp_get_num_threads();
+
                 double *scratch_vector = new double[tcount];
                 for (int i = 0; i < tcount; i++){
                     scratch_vector[i] = 1e6;
@@ -143,12 +144,11 @@ void synthesize(state_t *s, info_t *info)
                 int cornery = ty - (info->w-1)/2;
                 int xEnd = info->xEnd;
                 int yEnd = info->yEnd;
-                int tcnt = omp_get_num_threads();
-                int chunk_size =  xEnd * yEnd / (tcnt);
-                chunk_size = chunk_size > 1 ? chunk_size : 1;
-
-                #pragma omp for schedule(dynamic, chunk_size) nowait
-                // #pragma omp for schedule(static) nowait
+                // int tcnt = omp_get_num_threads();
+                // int chunk_size =  xEnd * yEnd / (tcnt);
+                // chunk_size = chunk_size > 1 ? chunk_size : 1;
+                // #pragma omp for schedule(dynamic, chunk_size) nowait
+                #pragma omp for schedule(static) nowait
                 for (int i=0; i< xEnd * yEnd; i++) {
                     int x = i / yEnd;
                     int y = i % yEnd;
@@ -158,7 +158,7 @@ void synthesize(state_t *s, info_t *info)
                     }
                     dis[i] = dist;
                 }
-                for (int i = 0; i < tcount; i++){
+                for (int i = 0; i < tcount; i++) {
                     minDis = min(scratch_vector[i],minDis);
                 }
             }
