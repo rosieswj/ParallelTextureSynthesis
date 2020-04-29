@@ -18,13 +18,9 @@ static void usage(char *name)
 
 int main(int argc, char *argv[])
 {
-    // printf("test\n");
-    // Image sample("../src/1.ttr");
-
-    // printf("%d, %d\n", sample.width, sample.height);
     //user defined parameters
-    int WINDOW;
-    int RADIUS;
+    int WINDOW = -1;
+    int RADIUS = -1;
 
     char *INPUT = NULL;
     char *OUTPUT = NULL;
@@ -71,17 +67,17 @@ int main(int argc, char *argv[])
         outmsg("Please give output path\n");
         usage(argv[0]);
     }
+    if (WINDOW == -1 || RADIUS == -1)
+    {
+        outmsg("Missing paramters window/radius\n");
+        usage(argv[0]);
+    }
 
     printf("w=%d, r=%d\n", WINDOW, RADIUS);
-    track_activity(instrument);
-
-    START_ACTIVITY(ACTIVITY_IMAGE);
     Image sample(INPUT);
-    FINISH_ACTIVITY(ACTIVITY_IMAGE);
 
-    TextureSynthesis(sample, OUTPUT, RADIUS, WINDOW);
+    TextureSynthesis(sample, OUTPUT, RADIUS, WINDOW, instrument);
 
-    SHOW_ACTIVITY(stderr, instrument);
 
     return 0;
 }

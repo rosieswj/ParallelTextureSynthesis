@@ -11,7 +11,7 @@ void GetGaussianKernel(double sigma, int w, double **kernel);
 
 string int2str(int x);
 
-void TextureSynthesis(const Image &sample, const string &savefolder, int radius, int w);
+void TextureSynthesis(const Image &sample, const string &savefolder, int radius, int w, bool instrument);
 
 void GetTraversalSequence(const Pixel &center, int radius, vector<Pixel> &ts);
 
