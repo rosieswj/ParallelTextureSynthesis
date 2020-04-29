@@ -8,7 +8,7 @@
 #define MAX_THREAD 64
 
 /* Instrument different sections of program */
-static const char *activity_name[ACTIVITY_COUNT] = {"overhead", "read_write_image", "startup", "compute_dist", "find_moves"};
+static const char *activity_name[ACTIVITY_COUNT] = {"overhead",  "startup", "get_batch","compute_dist", "find_moves"};
 
 static bool tracking = false;
 static double global_start_time = 0.0;

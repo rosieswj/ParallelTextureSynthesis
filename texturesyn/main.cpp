@@ -78,46 +78,40 @@ int main(int argc, char *argv[])
         usage(argv[0]);
     }
 
-    // if (thread_count > 1) {
-    outmsg("Running with %d threads. Max possible is %d.\n",
+    if (thread_count > 1) {
+        outmsg("Running with %d threads. Max possible is %d.\n",
            thread_count, omp_get_max_threads());
-    // }
+    }
+    else {
+        outmsg("Running sequential implementation.\n");
+    }
     omp_set_num_threads(thread_count);
+    Image sampleImg(INPUT);
 
     track_activity(instrument);
-    //read sample image
-    START_ACTIVITY(ACTIVITY_IMAGE);
-    Image sampleImg(INPUT);
-    srand(INITSEED);
+    START_ACTIVITY(ACTIVITY_STARTUP);
 
     int sw = sampleImg.width;
     int sh = sampleImg.height;
     int rsize = 2 * RADIUS + WINDOW + 10;
-
+    srand(INITSEED);
     double **sample = getRGB(sampleImg);
 
     info_t *info = init_info(sample, sw, sh, WINDOW, RADIUS);
     state_t *s = init_state(info);
 
-    // printf("\n############## read sample done ##################\n");
     printf("sample [%d x %d] with r=%d, w=%d\n", info->sw, info->sh, info->r, info->w);
     printf("result [%d x %d]\n", info->rw, info->rh);
-    FINISH_ACTIVITY(ACTIVITY_IMAGE);
+    FINISH_ACTIVITY(ACTIVITY_STARTUP);
 
     synthesize(s, info);
-    // printf("\n############## synthesize done #####################\n");
+    printf("DONE\n");
+    SHOW_ACTIVITY(stderr, instrument);
 
-    //write result image
-    START_ACTIVITY(ACTIVITY_IMAGE);
     RGBtoImage(s->res, rsize, rsize, OUTPUT);
-    FINISH_ACTIVITY(ACTIVITY_IMAGE);
-
     freeState(s, info);
     freeInfo(info);
 
-    printf("DONE\n");
-
-    SHOW_ACTIVITY(stderr, instrument);
 
     return 0;
 }

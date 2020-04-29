@@ -2,7 +2,6 @@
 #include "lib/cycletimer.h"
 #include "lib/instrument.h"
 
-//BACKUP!
 double getDistanceOfBatch(state_t *s, info_t *info, int sx, int sy, int tx, int ty)
 {
     double sum = 0.0;
@@ -13,14 +12,20 @@ double getDistanceOfBatch(state_t *s, info_t *info, int sx, int sy, int tx, int 
     int sh = info->sh;
     int rh = info->rh;
     int w = info->w;
-    for (int i = 0; i < w; i++)
-    {
-        for (int j = 0; j < w; j++)
-        {
-            if (flag[tx + i][ty + j])
-            {
-                validcnt++;
-                sum += getSquareDist(info->sample[(sx + i) * sh + sy + j], res[(tx + i) * rh + ty + j]) * kernel[i][j];
+    int CLINE_SIZE = 16;
+    for (int i = 0; i < w; i += CLINE_SIZE) {
+        for (int j = 0; j < w; j+= CLINE_SIZE) {
+            int leftoverI = (w-i);
+            int leftoverJ = (w-j);
+            int leni = CLINE_SIZE < leftoverI ? CLINE_SIZE : leftoverI;
+            int lenj = CLINE_SIZE < leftoverJ ? CLINE_SIZE : leftoverJ;
+            for (int ii= 0; ii < leni; ii ++) {
+                for (int jj = 0; jj < lenj; jj++){
+                    if (flag[tx + i + ii][ty + j + jj]) {
+                        validcnt++;
+                        sum += getSquareDist(info->sample[(sx + i + ii) * sh + sy + j + jj], res[(tx + i + ii) * rh + ty + j + jj]) * kernel[i][j];
+                    }
+                }
             }
         }
     }
@@ -65,31 +70,10 @@ void getTraversalSequence(int **ts, int radius, int cx, int cy)
     }
 }
 
-double compute_dist(state_t *s,info_t *info, double ** dis,int tx, int ty) {
 
-    double minDis = 1e6;
-    int xEnd = info->xEnd;
-    int yEnd = info->yEnd;
-    int cornerx = tx - (info->w-1)/2;
-    int cornery = ty - (info->w-1)/2;
-
-    for (int x = 0; x < xEnd; x++)
-    {
-        for (int y = 0; y < yEnd; y++)
-        {
-            double dist = getDistanceOfBatch(s, info, x, y, cornerx, cornery);
-            minDis = min(dist, minDis);
-            dis[x][y] = dist;
-        }
-    }
-    return minDis;
-}
-
-//TODO
 void synthesize(state_t *s, info_t *info)
 {
 
-    // printAll(sample, sw, sh);
     START_ACTIVITY(ACTIVITY_STARTUP);
     int total = 0;
     int rw = info->rw;
@@ -102,13 +86,7 @@ void synthesize(state_t *s, info_t *info)
     bool ** flag = s->flag;
     double **sample = info->sample;
     double **res = s->res;
-
-    double **dis = new double *[sw - w + 1];
-    for (int i = 0; i < sw - w + 1; i++)
-    {
-        dis[i] = new double[sh - w + 1];
-    }
-
+    double* dis = new double[xEnd * yEnd];
     //============================init window
     int cx = rw / 2;
     int cy = rh / 2;
@@ -120,9 +98,7 @@ void synthesize(state_t *s, info_t *info)
         for (int j = -1; j < 2; j++)
         {
             int si = (init_x + i) * sh + (init_y + j);
-            int ri = ID(cx + i, cy + j, rh); //res[width][height]
-            // printf("si: %d, ri: %d\n", si, ri);
-            // printRGB(res, ri);
+            int ri = ID(cx + i, cy + j, rh);        //res[width][height]
             for (int c = 0; c < 3; c++)
             {
                 res[ri][c] = sample[si][c];
@@ -137,6 +113,7 @@ void synthesize(state_t *s, info_t *info)
     int currR = 2;
     while (currR <= info->r)
     {
+        START_ACTIVITY(ACTIVITY_BATCH);
         int traverseSize = 2 * currR * 4;
         int **ts = new int *[traverseSize];
         for (int i = 0; i < traverseSize; i++)
@@ -144,19 +121,16 @@ void synthesize(state_t *s, info_t *info)
             ts[i] = new int[2];
         }
         getTraversalSequence(ts, currR, cx, cy);
-        printf("r=%d: %d\n", currR, traverseSize);
+        FINISH_ACTIVITY(ACTIVITY_BATCH);
 
         for (int i = 0; i < traverseSize; i++)
         {
+            START_ACTIVITY(ACTIVITY_DIST);
             int tx = ts[i][0];
             int ty = ts[i][1];
+
             if (flag[tx][ty]) continue;
-
-            START_ACTIVITY(ACTIVITY_DIST);
-            // double minDis = compute_dist(s, info, dis, tx, ty);
-
             double minDis = 1e6;
-
             #pragma omp parallel default(none) shared(dis, s, info, tx, ty, minDis)
             {
                 int tid = omp_get_thread_num();
@@ -174,22 +148,20 @@ void synthesize(state_t *s, info_t *info)
                 chunk_size = chunk_size > 1 ? chunk_size : 1;
 
                 #pragma omp for schedule(dynamic, chunk_size) nowait
-                // #pragma omp for schedule(static)
+                // #pragma omp for schedule(static) nowait
                 for (int i=0; i< xEnd * yEnd; i++) {
                     int x = i / yEnd;
                     int y = i % yEnd;
                     double dist = getDistanceOfBatch(s, info, x, y, cornerx, cornery);
-                    dis[x][y] = dist;
-                    scratch_vector[tid] = min(dist,scratch_vector[tid]);
-                    //minDis = min(dist, minDis);
+                    if (dist <  scratch_vector[tid]) {
+                         scratch_vector[tid] = dist;
+                    }
+                    dis[i] = dist;
                 }
                 for (int i = 0; i < tcount; i++){
                     minDis = min(scratch_vector[i],minDis);
                 }
             }
-
-            // return minDis;
-
             FINISH_ACTIVITY(ACTIVITY_DIST);
 
             START_ACTIVITY(ACTIVITY_NEXT);
@@ -197,18 +169,12 @@ void synthesize(state_t *s, info_t *info)
             canPixel.clear();
 
             double upperBound = minDis * (1 + EPSILON);
-            for (int x = 0; x < xEnd; x++)
-            {
-                for (int y = 0; y < yEnd; y++)
-                {
-                    if (dis[x][y] <= upperBound)
-                    {
-                        canPixel.push_back(x * yEnd + y);
-                    }
+            for (int i=0; i<xEnd * yEnd; i++) {
+                if (dis[i] <= upperBound) {
+                    canPixel.push_back(i);
                 }
             }
             int pixelCnt = canPixel.size();
-            // printf("r=%d, count=%d, canPixel=%d\n", currR, traverseSize, pixelCnt);
             int choice = canPixel[randint(pixelCnt)];
             int choiceX = choice / yEnd + halfw;
             int choiceY = choice % yEnd + halfw;
@@ -227,10 +193,5 @@ void synthesize(state_t *s, info_t *info)
     }
 
     printf("processed pixel total = %d\n", total);
-
-    for (int i = 0; i < sw - w + 1; i++)
-    {
-        delete[] dis[i];
-    }
     delete[] dis;
 }

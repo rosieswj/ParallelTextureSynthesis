@@ -1,5 +1,6 @@
 #include "texture.h"
 #include "all.h"
+
 double getSquareDist(double *A, double *B)
 {
     return (A[0] - B[0]) * (A[0] - B[0]) + (A[1] - B[1]) * (A[1] - B[1]) + (A[2] - B[2]) * (A[2] - B[2]);
@@ -94,50 +95,6 @@ void freeState(state_t *s, info_t *info) {
 }
 
 
-
-// void freeState(state_t *s, info_t *info) {
-//     int rsize = 2 * info->r + info->w + 10;
-//     deleteRGB(s->res, rsize, rsize);
-//     for (int i = 0; i < info->rw; i++)
-//     {
-//         delete[] s->flag[i];
-//     }
-//     delete[] s->flag;
-//     free(s);
-// }
-
-// state_t *init_state(info_t *info) {
-//     state_t *s = (state_t *) malloc(sizeof(state_t));
-//     if (info == NULL) {
-//         outmsg("Couldn't allocate storage state\n");
-//         return NULL;
-//     }
-//     int rw = info->rw;
-//     int rh = info->rh;
-
-//     int rsize = 2 * info->r + info->w + 10;
-//     double **res = new double *[rsize * rsize];
-//     for (int i = 0; i < rsize * rsize; i++)
-//     {
-//         res[i] = new double[3]; //RGB value
-//     }
-//     s->res = res;
-
-//     bool **flag = new bool *[rw];
-//     for (int i = 0; i < rw; i++)
-//     {
-//         flag[i] = new bool[rh];
-//         for (int j = 0; j < rh; j++)
-//         {
-//             flag[i][j] = false;
-//         }
-//     }
-//     s->flag = flag;
-//     return s;
-// }
-
-
-
 void getGaussianKernel(double sigma, int w, double **kernel)
 {
     double p1 = -1 / (2 * sigma * sigma);
@@ -155,14 +112,6 @@ void getGaussianKernel(double sigma, int w, double **kernel)
 
 double **getRGB(const Image &img)
 {
-
-    // double **pixels = new double *[img.width * img.height];
-    // for (int i = 0; i < img.width * img.height; ++i)
-    // {
-    //     pixels[i] = new double[3];
-    // }
-    // img.getPixels(pixels);
-    // return pixels;
     double **pixels = (double **) malloc(sizeof(double) * img.width * img.height);
     for (int i = 0; i < img.width * img.height; ++i)
     {
@@ -183,16 +132,17 @@ void deleteRGB(double **pixels, int w, int h)
     delete[] pixels;
 }
 
+
 void RGBtoImage(double **pixels, int w, int h, const string &filename)
 {
-    Image res(w, h);
+    ofstream out(filename + "_" + int2str(w) + "x" + int2str(h) + ".ppm");
+    out << "P3" << endl;
+    out << w << ' ' << h << endl;
+    out << 255 << endl;
     for (int i = 0; i < w * h; i++)
     {
-        int x = i / h;
-        int y = i % h;
-        res.SetColor(Vector2(x, y), Vector3(pixels[i][0], pixels[i][1], pixels[i][2]));
+        out << int(pixels[i][0]) << ' ' <<  int(pixels[i][1])  << ' ' <<  int(pixels[i][2]) << endl;
     }
-    res.save(filename + "_" + int2str(w) + "x" + int2str(h) + ".ppm");
 }
 
 void printRGB(double **val, int idx)
