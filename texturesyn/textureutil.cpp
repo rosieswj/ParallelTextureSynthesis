@@ -21,8 +21,8 @@ info_t * init_info(double **sample, int sw, int sh, int w, int r) {
     info->sh = sh;
     info->w = w;
     info->r = r;
-    info->rw = 2 * r + w + 10;
-    info->rh = 2 * r + w + 10;
+    info->rw = 2 * r + w + BORDER_WIDTH;
+    info->rh = 2 * r + w + BORDER_WIDTH;
     info->xEnd = sw - w + 1;
     info->yEnd = sh - w + 1;
     info->sample=  sample;
@@ -133,13 +133,14 @@ void deleteRGB(double **pixels, int w, int h)
 }
 
 
-void RGBtoImage(double **pixels, int w, int h, const string &filename)
+void RGBtoImage(double **pixels, int window, int radius, const string &filename)
 {
-    ofstream out(filename + "_" + int2str(w) + "x" + int2str(h) + ".ppm");
+    int rsize = 2 * radius + window + BORDER_WIDTH;
+    ofstream out(filename + "_" + int2str(window) + "_" + int2str(radius) + ".ppm");
     out << "P3" << endl;
-    out << w << ' ' << h << endl;
+    out << rsize << ' ' << rsize << endl;
     out << 255 << endl;
-    for (int i = 0; i < w * h; i++)
+    for (int i = 0; i < rsize * rsize; i++)
     {
         out << int(pixels[i][0]) << ' ' <<  int(pixels[i][1])  << ' ' <<  int(pixels[i][2]) << endl;
     }

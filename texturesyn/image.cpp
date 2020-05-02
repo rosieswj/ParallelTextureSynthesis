@@ -1,6 +1,5 @@
 #include "image.h"
 
-// Image::Image() : width(0), height(0), image(NULL) {}
 Image::Image(int _w, int _h) : width(_w), height(_h)
 {
     image = new Color *[width];
@@ -12,6 +11,10 @@ Image::Image(int _w, int _h) : width(_w), height(_h)
 Image::Image(const string &filename)
 {
     ifstream in(filename);
+    if (! in.is_open()) {
+        cout << "Input file not found: " << filename << endl;
+        exit(1);
+    }
     in >> width >> height;
     image = new Color *[width];
     for (int i = 0; i < width; i++)
@@ -21,7 +24,6 @@ Image::Image(const string &filename)
         for (int i = 0; i < width; i++)
         {
             in >> image[i][j];
-            // in >> image[j][i];
         }
     }
 }
@@ -36,7 +38,6 @@ void Image::save(const string &filename)
         for (int i = 0; i < width; i++)
         {
             out << int(image[i][j].r) << ' ' << int(image[i][j].g) << ' ' << int(image[i][j].b) << endl;
-            // out << int(image[j][i].r) << ' ' << int(image[j][i].g) << ' ' << int(image[j][i].b) << endl;
         }
     }
 }

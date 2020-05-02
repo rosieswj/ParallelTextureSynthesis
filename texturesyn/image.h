@@ -21,7 +21,6 @@ public:
     Color GetColor(const Pixel &p) const;
     void SetColor(const Pixel &p, Color color);
     void SetColor(int x, int y, Color color);
-    // unsigned char **getPixels() const;
     void getPixels(double **pixels) const;
     ~Image();
 };
