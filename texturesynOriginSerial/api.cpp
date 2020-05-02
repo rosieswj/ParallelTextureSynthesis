@@ -106,7 +106,6 @@ void TextureSynthesis(const Image &sample, const string &savefolder, int radius,
     while (currR <= radius)
     {
         START_ACTIVITY(ACTIVITY_BATCH);
-        // cout << "Current Radius : " << currR << endl;
         GetTraversalSequence(center, currR, ts);
         FINISH_ACTIVITY(ACTIVITY_BATCH);
         for (auto pos : ts)
@@ -167,7 +166,7 @@ void TextureSynthesis(const Image &sample, const string &savefolder, int radius,
     delete[] flag;
 
     SHOW_ACTIVITY(stderr, instrument);
-    res.save(savefolder + "_" + int2str(w) + "x" + int2str(height) + ".ppm");
+    res.save(savefolder + "_" + int2str(w) + "_" + int2str(radius) + ".ppm");
 }
 
 string int2str(int x)
@@ -186,11 +185,7 @@ double GetDistanceOfBatch(const Pixel &so, const Pixel &ro, const Image &sample,
         {
             Pixel p1 = so + Vector2(i, j);
             Pixel p2 = ro + Vector2(i, j);
-            if (flag[p2.x][p2.y] /*&& 0 <= p1.x && p1.x < sample.width &&
-                0 <= p1.y && p1.y < sample.height &&
-                0 <= p2.x && p2.x < res.width &&
-                0 <= p2.y && p2.y < res.height*/
-            )
+            if (flag[p2.x][p2.y] )
             {
                 validcnt++;
                 Color c1 = sample.GetColor(p1);

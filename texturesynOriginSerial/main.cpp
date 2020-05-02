@@ -5,14 +5,14 @@
 
 static void usage(char *name)
 {
-    const char *use_string = "-s SFILE -o OFILE -w WINDOWS -r RADIUS [-I]";
+    const char *use_string = "-s SFILE -o OFILE -w WINDOW -r RADIUS [-I]";
     outmsg("Usage: %s %s\n", name, use_string);
-    outmsg("   -h         Print this message\n");
     outmsg("   -s SFILE   Sample file\n");
     outmsg("   -o OFILE   Output file\n");
     outmsg("   -w WINDOW  Window size\n");
     outmsg("   -r RADIUS  Output radius\n");
     outmsg("   -I         Instrument simulation activities\n");
+    outmsg("   -h         Print this message\n");
     exit(0);
 }
 
@@ -75,9 +75,14 @@ int main(int argc, char *argv[])
 
     printf("w=%d, r=%d\n", WINDOW, RADIUS);
     Image sample(INPUT);
+    int sw = sample.width;
+    int sh = sample.height;
+    if (WINDOW > sw || WINDOW > sh) {
+        outmsg("Window size cannot be greater than sample dimension\n");
+        exit(1);
+    }
 
     TextureSynthesis(sample, OUTPUT, RADIUS, WINDOW, instrument);
-
 
     return 0;
 }
