@@ -6,6 +6,36 @@
 result and sample windows */
 double getDistanceOfBatch(state_t *s, info_t *info, int sx, int sy, int tx, int ty)
 {
+    // double sum = 0.0;
+    // int validcnt = 0;
+    // double **kernel = info->kernel;
+    // double **res = s->res;
+    // bool **flag = s->flag;
+    // int sh = info->sh;
+    // int rh = info->rh;
+    // int w = info->w;
+    // int CLINE_SIZE = 16;
+    // for (int i = 0; i < w; i += CLINE_SIZE) {
+    //     for (int j = 0; j < w; j+= CLINE_SIZE) {
+    //         int leftoverI = (w-i);
+    //         int leftoverJ = (w-j);
+    //         int leni = CLINE_SIZE < leftoverI ? CLINE_SIZE : leftoverI;
+    //         int lenj = CLINE_SIZE < leftoverJ ? CLINE_SIZE : leftoverJ;
+    //         for (int ii= 0; ii < leni; ii ++) {
+    //             for (int jj = 0; jj < lenj; jj++){
+    //                 if (flag[tx + i + ii][ty + j + jj]) {
+    //                     validcnt++;
+    //                     sum += getSquareDist(info->sample[(sx + i + ii) * sh + sy + j + jj],
+    //                         res[(tx + i + ii) * rh + ty + j + jj]) * kernel[i][j];
+    //                 }
+    //             }
+    //         }
+    //     }
+    // }
+    // if (!validcnt)
+    //     return 1e6;
+    // else
+    //     return sum / validcnt;
     double sum = 0.0;
     int validcnt = 0;
     double **kernel = info->kernel;
@@ -14,21 +44,14 @@ double getDistanceOfBatch(state_t *s, info_t *info, int sx, int sy, int tx, int 
     int sh = info->sh;
     int rh = info->rh;
     int w = info->w;
-    int CLINE_SIZE = 16;
-    for (int i = 0; i < w; i += CLINE_SIZE) {
-        for (int j = 0; j < w; j+= CLINE_SIZE) {
-            int leftoverI = (w-i);
-            int leftoverJ = (w-j);
-            int leni = CLINE_SIZE < leftoverI ? CLINE_SIZE : leftoverI;
-            int lenj = CLINE_SIZE < leftoverJ ? CLINE_SIZE : leftoverJ;
-            for (int ii= 0; ii < leni; ii ++) {
-                for (int jj = 0; jj < lenj; jj++){
-                    if (flag[tx + i + ii][ty + j + jj]) {
-                        validcnt++;
-                        sum += getSquareDist(info->sample[(sx + i + ii) * sh + sy + j + jj],
-                            res[(tx + i + ii) * rh + ty + j + jj]) * kernel[i][j];
-                    }
-                }
+    for (int i = 0; i < w; i++)
+    {
+        for (int j = 0; j < w; j++)
+        {
+            if (flag[tx + i][ty + j])
+            {
+                validcnt++;
+                sum += getSquareDist(info->sample[(sx + i) * sh + sy + j], res[(tx + i) * rh + ty + j]) * kernel[i][j];
             }
         }
     }
@@ -140,12 +163,12 @@ void synthesize(state_t *s, info_t *info)
 
                 /* use separate-accumulate to eliminate synchronization
                    across threads to write to min */
+                int cornerx = tx - (info->w-1)/2;
+                int cornery = ty - (info->w-1)/2;
                 double *scratch_vector = new double[tcount];
                 for (int i = 0; i < tcount; i++){
                     scratch_vector[i] = 1e6;
                 }
-                int cornerx = tx - (info->w-1)/2;
-                int cornery = ty - (info->w-1)/2;
                 int xEnd = info->xEnd;
                 int yEnd = info->yEnd;
 
@@ -160,7 +183,7 @@ void synthesize(state_t *s, info_t *info)
                     dis[i] = dist;
                 }
                 for (int i = 0; i < tcount; i++) {
-                    minDis = min(scratch_vector[i],minDis);
+                    minDis = min(scratch_vector[i], minDis);
                 }
             }
             FINISH_ACTIVITY(ACTIVITY_DIST);

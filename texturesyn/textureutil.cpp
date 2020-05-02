@@ -136,14 +136,24 @@ void deleteRGB(double **pixels, int w, int h)
 void RGBtoImage(double **pixels, int window, int radius, const string &filename)
 {
     int rsize = 2 * radius + window + BORDER_WIDTH;
-    ofstream out(filename + "_" + int2str(window) + "_" + int2str(radius) + ".ppm");
-    out << "P3" << endl;
-    out << rsize << ' ' << rsize << endl;
-    out << 255 << endl;
-    for (int i = 0; i < rsize * rsize; i++)
+    int w= rsize;
+    int h = rsize;
+    Image res(rsize, rsize);
+     for (int i = 0; i < w * h; i++)
     {
-        out << int(pixels[i][0]) << ' ' <<  int(pixels[i][1])  << ' ' <<  int(pixels[i][2]) << endl;
-    }
+        int x = i / h;
+        int y = i % h;
+        res.SetColor(Vector2(x, y), Vector3(pixels[i][0], pixels[i][1], pixels[i][2]));
+     }
+    res.save(filename + "_" + int2str(window) + "_" + int2str(radius) + ".ppm");
+    // ofstream out(filename + "_" + int2str(window) + "_" + int2str(radius) + ".ppm");
+    // out << "P3" << endl;
+    // out << rsize << ' ' << rsize << endl;
+    // out << 255 << endl;
+    // for (int i = 0; i < rsize * rsize; i++)
+    // {
+    //     out << int(pixels[i][0]) << ' ' <<  int(pixels[i][1])  << ' ' <<  int(pixels[i][2]) << endl;
+    // }
 }
 
 void printRGB(double **val, int idx)
