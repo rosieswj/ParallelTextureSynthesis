@@ -1,0 +1,47 @@
+---
+---
+
+@import "{{ site.theme }}";
+
+.wrapper {
+  width: 1000px;
+}
+
+p {
+  font-size: 13px;
+  margin: 0 0 10px;
+}
+
+section {
+  width: 600px;
+  margin-bottom: 20px;
+}
+
+code {
+  font-size: 12px;
+}
+
+h1 {
+  font-size: 30px;
+  font-weight: 300;
+}
+
+a, h2 {
+  color: #25b1b9;
+}
+
+a:hover, a:focus {
+  transition: 0.5s;
+  color: white;
+  background-color: #42d0d1;
+  font-weight: 300;
+  opacity: 0.8;
+}
+
+
+h1, h2, h3, h4, h5, h6 {
+  color: #25b1b9;
+  margin: 20px 0 10px;
+}
+
+
