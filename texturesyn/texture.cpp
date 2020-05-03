@@ -6,36 +6,47 @@
 result and sample windows */
 double getDistanceOfBatch(state_t *s, info_t *info, int sx, int sy, int tx, int ty)
 {
-    // double sum = 0.0;
-    // int validcnt = 0;
-    // double **kernel = info->kernel;
-    // double **res = s->res;
-    // bool **flag = s->flag;
-    // int sh = info->sh;
-    // int rh = info->rh;
-    // int w = info->w;
-    // int CLINE_SIZE = 16;
-    // for (int i = 0; i < w; i += CLINE_SIZE) {
-    //     for (int j = 0; j < w; j+= CLINE_SIZE) {
-    //         int leftoverI = (w-i);
-    //         int leftoverJ = (w-j);
-    //         int leni = CLINE_SIZE < leftoverI ? CLINE_SIZE : leftoverI;
-    //         int lenj = CLINE_SIZE < leftoverJ ? CLINE_SIZE : leftoverJ;
-    //         for (int ii= 0; ii < leni; ii ++) {
-    //             for (int jj = 0; jj < lenj; jj++){
-    //                 if (flag[tx + i + ii][ty + j + jj]) {
-    //                     validcnt++;
-    //                     sum += getSquareDist(info->sample[(sx + i + ii) * sh + sy + j + jj],
-    //                         res[(tx + i + ii) * rh + ty + j + jj]) * kernel[i][j];
-    //                 }
-    //             }
-    //         }
-    //     }
-    // }
-    // if (!validcnt)
-    //     return 1e6;
-    // else
-    //     return sum / validcnt;
+    double sum = 0.0;
+    int validcnt = 0;
+    double **kernel = info->kernel;
+    double **res = s->res;
+    bool **flag = s->flag;
+    int sh = info->sh;
+    int rh = info->rh;
+    int w = info->w;
+    int CLINE_SIZE = 5;
+    for (int i = 0; i < w; i += CLINE_SIZE) {
+        for (int j = 0; j < w; j+= CLINE_SIZE) {
+            int leftoverI = i+CLINE_SIZE-w;
+            int leftoverJ = j+CLINE_SIZE-w;
+            int leni,lenj;
+            if (leftoverI > 0){
+                leni = leftoverI < CLINE_SIZE ?  leftoverI : CLINE_SIZE;
+            }else{
+                leni = CLINE_SIZE;
+            }
+            if (leftoverJ > 0){
+                lenj = CLINE_SIZE < leftoverJ ? CLINE_SIZE : leftoverJ;
+            }else{
+                lenj = CLINE_SIZE;
+            }
+            
+            for (int ii= 0; ii < leni; ii ++) {
+                for (int jj = 0; jj < lenj; jj++){
+                    if (flag[tx + i + ii][ty + j + jj]) {
+                        validcnt++;
+                        sum += getSquareDist(info->sample[(sx + i + ii) * sh + sy + j + jj],
+                            res[(tx + i + ii) * rh + ty + j + jj]) * kernel[i+ii][j+jj];
+                    }
+                }
+            }
+        }
+    }
+    if (!validcnt)
+        return 1e6;
+    else
+        return sum / validcnt;
+    /**
     double sum = 0.0;
     int validcnt = 0;
     double **kernel = info->kernel;
@@ -59,6 +70,7 @@ double getDistanceOfBatch(state_t *s, info_t *info, int sx, int sy, int tx, int 
         return 1e6;
     else
         return sum / validcnt;
+        **/
 }
 
 /* return all pixels to be processed in the batch with current radius */
@@ -148,6 +160,7 @@ void synthesize(state_t *s, info_t *info)
         getTraversalSequence(ts, currR, cx, cy);
         FINISH_ACTIVITY(ACTIVITY_BATCH);
 
+        //printf("################batch %d\n", currR);
         for (int i = 0; i < traverseSize; i++)
         {
             START_ACTIVITY(ACTIVITY_DIST);
@@ -158,8 +171,9 @@ void synthesize(state_t *s, info_t *info)
             double minDis = 1e6;
             #pragma omp parallel default(none) shared(dis, s, info, tx, ty, minDis)
             {
-                int tid = omp_get_thread_num();
+
                 int tcount = omp_get_num_threads();
+                int tid = omp_get_thread_num();
 
                 /* use separate-accumulate to eliminate synchronization
                    across threads to write to min */
@@ -174,19 +188,33 @@ void synthesize(state_t *s, info_t *info)
 
                 #pragma omp for schedule(static) nowait
                 for (int i=0; i< xEnd * yEnd; i++) {
+                    //int id = omp_get_thread_num();
                     int x = i / yEnd;
                     int y = i % yEnd;
                     double dist = getDistanceOfBatch(s, info, x, y, cornerx, cornery);
-                    if (dist <  scratch_vector[tid]) {
-                         scratch_vector[tid] = dist;
-                    }
+                    //if (dist < scratch_vector[tid]) {
+                    //     scratch_vector[tid] = dist;
+                    //}
+                    scratch_vector[tid] = min(dist,scratch_vector[tid]);
                     dis[i] = dist;
+                    //outmsg("[%d] update: %d -> %.2f\n", tid, i, dist);
                 }
-                for (int i = 0; i < tcount; i++) {
-                    minDis = min(scratch_vector[i], minDis);
-                }
+                //if (tid == 0) {
+                #pragma omp for schedule(static)
+                    for (int i = 0; i < tcount; i++) {
+                        //if (scratch_vector[i] < minDis){
+                        #pragma omp critical
+                        minDis = min(minDis,scratch_vector[i]);
+                        //}
+                    }
+                //}
+                //}
             }
+            //printf("i=%d, misDis: %.2f\n", i, dis[i]);
             FINISH_ACTIVITY(ACTIVITY_DIST);
+            for (int i=0; i<xEnd * yEnd; i++) {
+                //printf("%d: %.2f\n", i, dis[i]);
+            }
 
             START_ACTIVITY(ACTIVITY_NEXT);
             vector<int> canPixel;
