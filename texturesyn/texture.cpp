@@ -14,63 +14,27 @@ double getDistanceOfBatch(state_t *s, info_t *info, int sx, int sy, int tx, int 
     int sh = info->sh;
     int rh = info->rh;
     int w = info->w;
-    int CLINE_SIZE = 5;
-    for (int i = 0; i < w; i += CLINE_SIZE) {
-        for (int j = 0; j < w; j+= CLINE_SIZE) {
-            int leftoverI = i+CLINE_SIZE-w;
-            int leftoverJ = j+CLINE_SIZE-w;
-            int leni,lenj;
-            if (leftoverI > 0){
-                leni = leftoverI < CLINE_SIZE ?  leftoverI : CLINE_SIZE;
-            }else{
-                leni = CLINE_SIZE;
-            }
-            if (leftoverJ > 0){
-                lenj = CLINE_SIZE < leftoverJ ? CLINE_SIZE : leftoverJ;
-            }else{
-                lenj = CLINE_SIZE;
-            }
-            
-            for (int ii= 0; ii < leni; ii ++) {
-                for (int jj = 0; jj < lenj; jj++){
+    int BLOCK_SIZE = 16;
+    for (int i = 0; i < w; i+=BLOCK_SIZE) {
+        int leni = (w-i) >= BLOCK_SIZE ? BLOCK_SIZE : (w-i);
+        for (int j = 0; j < w; j+=BLOCK_SIZE) {
+            int lenj = (w-j) >= BLOCK_SIZE ? BLOCK_SIZE : (w-j);
+            for (int ii = 0; ii < leni; ii++) {
+                for (int jj = 0; jj < lenj; jj++) {
                     if (flag[tx + i + ii][ty + j + jj]) {
                         validcnt++;
                         sum += getSquareDist(info->sample[(sx + i + ii) * sh + sy + j + jj],
-                            res[(tx + i + ii) * rh + ty + j + jj]) * kernel[i+ii][j+jj];
+                            res[(tx + i + ii) * rh + ty + j + jj]) * kernel[i + ii][j + jj];
                     }
                 }
             }
+
         }
     }
     if (!validcnt)
         return 1e6;
     else
         return sum / validcnt;
-    /**
-    double sum = 0.0;
-    int validcnt = 0;
-    double **kernel = info->kernel;
-    double **res = s->res;
-    bool **flag = s->flag;
-    int sh = info->sh;
-    int rh = info->rh;
-    int w = info->w;
-    for (int i = 0; i < w; i++)
-    {
-        for (int j = 0; j < w; j++)
-        {
-            if (flag[tx + i][ty + j])
-            {
-                validcnt++;
-                sum += getSquareDist(info->sample[(sx + i) * sh + sy + j], res[(tx + i) * rh + ty + j]) * kernel[i][j];
-            }
-        }
-    }
-    if (!validcnt)
-        return 1e6;
-    else
-        return sum / validcnt;
-        **/
 }
 
 /* return all pixels to be processed in the batch with current radius */
@@ -160,7 +124,6 @@ void synthesize(state_t *s, info_t *info)
         getTraversalSequence(ts, currR, cx, cy);
         FINISH_ACTIVITY(ACTIVITY_BATCH);
 
-        //printf("################batch %d\n", currR);
         for (int i = 0; i < traverseSize; i++)
         {
             START_ACTIVITY(ACTIVITY_DIST);
@@ -171,10 +134,8 @@ void synthesize(state_t *s, info_t *info)
             double minDis = 1e6;
             #pragma omp parallel default(none) shared(dis, s, info, tx, ty, minDis)
             {
-
                 int tcount = omp_get_num_threads();
                 int tid = omp_get_thread_num();
-
                 /* use separate-accumulate to eliminate synchronization
                    across threads to write to min */
                 int cornerx = tx - (info->w-1)/2;
@@ -185,41 +146,27 @@ void synthesize(state_t *s, info_t *info)
                 }
                 int xEnd = info->xEnd;
                 int yEnd = info->yEnd;
-
                 #pragma omp for schedule(static) nowait
                 for (int i=0; i< xEnd * yEnd; i++) {
-                    //int id = omp_get_thread_num();
                     int x = i / yEnd;
                     int y = i % yEnd;
                     double dist = getDistanceOfBatch(s, info, x, y, cornerx, cornery);
-                    //if (dist < scratch_vector[tid]) {
-                    //     scratch_vector[tid] = dist;
-                    //}
-                    scratch_vector[tid] = min(dist,scratch_vector[tid]);
-                    dis[i] = dist;
-                    //outmsg("[%d] update: %d -> %.2f\n", tid, i, dist);
-                }
-                //if (tid == 0) {
-                #pragma omp for schedule(static)
-                    for (int i = 0; i < tcount; i++) {
-                        //if (scratch_vector[i] < minDis){
-                        #pragma omp critical
-                        minDis = min(minDis,scratch_vector[i]);
-                        //}
+                    if (dist < scratch_vector[tid]) {
+                        scratch_vector[tid] = dist;
                     }
-                //}
-                //}
+                    dis[i] = dist;
+                }
+                #pragma omp for schedule(static)
+                for (int i = 0; i < tcount; i++) {
+                    #pragma omp critical
+                    minDis = min(minDis,scratch_vector[i]);
+                }
             }
-            //printf("i=%d, misDis: %.2f\n", i, dis[i]);
             FINISH_ACTIVITY(ACTIVITY_DIST);
-            for (int i=0; i<xEnd * yEnd; i++) {
-                //printf("%d: %.2f\n", i, dis[i]);
-            }
 
             START_ACTIVITY(ACTIVITY_NEXT);
             vector<int> canPixel;
             canPixel.clear();
-
             double upperBound = minDis * (1 + EPSILON);
             for (int i=0; i<xEnd * yEnd; i++) {
                 if (dis[i] <= upperBound) {

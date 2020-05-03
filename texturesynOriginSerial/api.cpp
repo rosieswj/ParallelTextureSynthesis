@@ -132,6 +132,7 @@ void TextureSynthesis(const Image &sample, const string &savefolder, int radius,
             START_ACTIVITY(ACTIVITY_NEXT);
             vector<Pixel> canPixel;
             canPixel.clear();
+
             double upperBound = minDis * (1 + epsilon);
             for (int x = 0; x < sw - w + 1; x++)
                 for (int y = 0; y < sh - w + 1; y++)
@@ -139,7 +140,6 @@ void TextureSynthesis(const Image &sample, const string &savefolder, int radius,
                     if (dis[x][y] <= upperBound)
                         canPixel.push_back(Vector2(x, y));
                 }
-
             int pixelCnt = canPixel.size();
             int index = randint(pixelCnt);
             Pixel choice = canPixel[index] + Vector2(halfw, halfw);

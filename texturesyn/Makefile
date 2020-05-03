@@ -3,7 +3,7 @@ CXX=g++
 RM=rm -f
 OMP=-fopenmp -DOMP
 
-CFLAGS=-g -O3 -Wall  -std=c++11 
+CFLAGS=-g -O3 -Wall  -std=c++11
 LDFLAGS= -lm
 
 CFILES = lib/cycletimer.cpp lib/instrument.cpp vector2.cpp vector3.cpp  image.cpp main.cpp texture.cpp textureutil.cpp
@@ -15,4 +15,5 @@ image: $(CFILES) $(HFILES)
 clean:
 	$(RM) -f texturesyn
 	$(RM) -rf *.dSYM
+	$(RM) -f out/*
 
