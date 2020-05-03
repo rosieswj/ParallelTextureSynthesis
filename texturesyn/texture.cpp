@@ -156,11 +156,16 @@ void synthesize(state_t *s, info_t *info)
                     }
                     dis[i] = dist;
                 }
+                #pragma omp for reduction(min:minDis)
+                for (int i = 0; i < tcount; i++) {
+                    minDis = fmin(minDis,scratch_vector[i]);
+                }
+                /**
                 #pragma omp for schedule(static)
                 for (int i = 0; i < tcount; i++) {
                     #pragma omp critical
                     minDis = min(minDis,scratch_vector[i]);
-                }
+                }**/
             }
             FINISH_ACTIVITY(ACTIVITY_DIST);
 
