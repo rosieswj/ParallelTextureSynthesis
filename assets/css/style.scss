@@ -60,11 +60,29 @@ h6 {
 }
 
 #names a {
-  text-decoration: underline;
+  color: #74d898;
+}
+
+#names a:hover {
+  background-color: #74d898;
+  color: white;
+}
+
+#names a:focus {
+  background-color: #74d898;
+  color: white;
 }
 
 .view a {
   font-size: 16px;
+}
+
+footer {
+  width: 300px;
+  float: left;
+  position: fixed;
+  bottom: 20px;
+  -webkit-font-smoothing: subpixel-antialiased;
 }
 
 @media print, screen and (max-width: 960px) {
