@@ -17,6 +17,10 @@ section {
   margin-bottom: 20px;
 }
 
+header {
+  width: 350px;
+}
+
 code {
   font-size: 12px;
 }
@@ -24,6 +28,7 @@ code {
 h1 {
   font-size: 30px;
   font-weight: 300;
+  line-height: 35px;
 }
 
 a, h2 {
@@ -44,4 +49,11 @@ h1, h2, h3, h4, h5, h6 {
   margin: 20px 0 10px;
 }
 
+
+@media print, screen and (max-width: 960px) {
+  header {
+     padding-right: 0px; 
+  }
+
+}
 
