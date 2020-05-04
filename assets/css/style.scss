@@ -31,11 +31,13 @@ h1 {
   line-height: 35px;
 }
 
-a, h2 {
+a,
+h2 {
   color: #25b1b9;
 }
 
-a:hover, a:focus {
+a:hover,
+a:focus {
   transition: 0.5s;
   color: white;
   background-color: #42d0d1;
@@ -43,9 +45,12 @@ a:hover, a:focus {
   opacity: 0.8;
 }
 
-
-
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   color: #25b1b9;
   margin: 20px 0 10px;
 }
@@ -54,15 +59,16 @@ h1, h2, h3, h4, h5, h6 {
   font-size: 20px;
 }
 
+#names a {
+  text-decoration: underline;
+}
+
 .view a {
   font-size: 16px;
 }
 
 @media print, screen and (max-width: 960px) {
   header {
-     padding-right: 0px; 
+    padding-right: 0px;
   }
-
 }
-
-
